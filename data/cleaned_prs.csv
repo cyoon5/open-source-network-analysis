@@ -1,0 +1,80 @@
+"repo","pr_number","author","title","state","created_at","closed_at","merged_at","merged_by","created_date"
+"tidyverse/dplyr",7847,"louisAM-BSH","Update copy-to.R","open","2026-06-25T16:03:10Z",NA,NA,NA,2026-06-25
+"tidyverse/dplyr",7844,"LeonidasZhak","docs: clarify between comparison semantics","closed","2026-06-06T01:42:33Z","2026-06-08T13:15:09Z",NA,NA,2026-06-06
+"tidyverse/dplyr",7842,"DavisVaughan","Experiment: Claude `/simplify` ","closed","2026-06-02T14:51:19Z","2026-06-02T14:51:44Z","2026-06-02T14:51:44Z",NA,2026-06-02
+"tidyverse/dplyr",7841,"jeis4wpi","docs: fix some typos","closed","2026-05-23T21:01:35Z","2026-05-23T22:40:56Z",NA,NA,2026-05-23
+"tidyverse/dplyr",7840,"iamYannC","Feature: group_modify() in R/group-map.R","closed","2026-05-23T16:04:02Z","2026-05-28T19:53:01Z",NA,NA,2026-05-23
+"tidyverse/dplyr",7836,"DavisVaughan","POC: Custom `summarise()` and `reframe()` groupings","closed","2026-05-15T14:54:38Z","2026-05-15T14:55:28Z",NA,NA,2026-05-15
+"tidyverse/dplyr",7835,"mrv0for0vandeta","Fix #7773 and #7785: Improve count() and across()","open","2026-05-13T01:38:56Z",NA,NA,NA,2026-05-13
+"tidyverse/dplyr",7830,"jeroenjanssens","Update Plausible analytics snippet","closed","2026-04-09T12:07:22Z","2026-05-06T15:51:13Z","2026-05-06T15:51:13Z",NA,2026-04-09
+"tidyverse/dplyr",7829,"hadley","Use dev roxygen2 + doc listing","open","2026-04-06T13:28:35Z",NA,NA,NA,2026-04-06
+"tidyverse/dplyr",7827,"DavisVaughan","RC 1.2.1","closed","2026-04-02T13:54:53Z","2026-04-03T14:05:01Z","2026-04-03T14:05:01Z",NA,2026-04-02
+"tidyverse/dplyr",7824,"juliasilge","Update Kapa.ai settings to be more privacy friendly","closed","2026-03-27T19:52:30Z","2026-03-29T00:24:07Z","2026-03-29T00:24:06Z",NA,2026-03-27
+"tidyverse/dplyr",7819,"DavisVaughan","Remove all C level non-API calls","closed","2026-03-20T16:12:39Z","2026-04-01T16:21:06Z","2026-04-01T16:21:06Z",NA,2026-03-20
+"tidyverse/dplyr",7817,"tanho63","add examples for `if_any()`/`if_all()` to `filter()` docs","open","2026-03-09T21:02:34Z",NA,NA,NA,2026-03-09
+"tidyverse/dplyr",7813,"Copilot","Add ellipsis to `tally()` and `add_tally()`","open","2026-02-21T06:29:33Z",NA,NA,NA,2026-02-21
+"tidyverse/dplyr",7809,"DavisVaughan","Make dplyr tests more robust to randomness","closed","2026-02-11T20:48:22Z","2026-02-12T21:05:52Z","2026-02-12T21:05:52Z",NA,2026-02-11
+"tidyverse/dplyr",7808,"DavisVaughan","Format vignettes with Air","closed","2026-02-11T15:31:16Z","2026-02-11T16:00:40Z","2026-02-11T16:00:40Z",NA,2026-02-11
+"tidyverse/dplyr",7807,"DavisVaughan","Prototype of webr on the landing page","open","2026-02-09T17:28:38Z",NA,NA,NA,2026-02-09
+"tidyverse/dplyr",7803,"wurli","chore: update readme to use `.by` instead of `group_by()`","open","2026-02-04T11:49:18Z",NA,NA,NA,2026-02-04
+"tidyverse/dplyr",7802,"DavisVaughan","RC 1.2.0","closed","2026-01-30T16:41:57Z","2026-02-03T21:11:30Z","2026-02-03T21:11:29Z",NA,2026-01-30
+"tidyverse/dplyr",7800,"DavisVaughan","Clean up `Suggests` and `Config/Needs/website` that aren't required","closed","2026-01-29T20:11:22Z","2026-01-29T20:34:25Z","2026-01-29T20:34:25Z",NA,2026-01-29
+"tidyverse/dplyr",7799,"DavisVaughan","Fix `reframe()` edge case with zero expressions","closed","2026-01-29T16:38:40Z","2026-01-29T16:49:53Z","2026-01-29T16:49:53Z",NA,2026-01-29
+"tidyverse/dplyr",7798,"DavisVaughan","Add an example of `recode_values()` + `across()`","closed","2026-01-28T19:57:44Z","2026-01-28T20:04:34Z","2026-01-28T20:04:34Z",NA,2026-01-28
+"tidyverse/dplyr",7797,"DavisVaughan","Rewrite `ffi_dplyr_reconstruct()` using `R_mapAttrib()`","closed","2026-01-27T21:01:12Z","2026-01-29T16:52:16Z","2026-01-29T16:52:16Z",NA,2026-01-27
+"tidyverse/dplyr",7795,"DavisVaughan","Better handle edge case of `NULL`s in `case_when()`","closed","2026-01-25T01:52:26Z","2026-01-25T02:15:58Z","2026-01-25T02:15:58Z",NA,2026-01-25
+"tidyverse/dplyr",7793,"DavisVaughan","Add recoding and replacing vignette","closed","2026-01-22T19:19:43Z","2026-01-23T16:08:56Z","2026-01-23T16:08:56Z",NA,2026-01-22
+"tidyverse/dplyr",7791,"DavisVaughan","Switch to deprecating `case_match()`, not superceding","closed","2026-01-16T17:36:19Z","2026-01-16T17:46:42Z","2026-01-16T17:46:42Z",NA,2026-01-16
+"tidyverse/dplyr",7790,"DavisVaughan","Add `id`s for `deprecate_soft()` and `deprecate_warn()` calls","closed","2026-01-16T17:02:26Z","2026-01-16T17:14:36Z","2026-01-16T17:14:36Z",NA,2026-01-16
+"tidyverse/dplyr",7784,"DavisVaughan","Add dates to deprecation NEWS bullets","closed","2025-12-19T18:46:44Z","2025-12-19T18:46:50Z","2025-12-19T18:46:50Z",NA,2025-12-19
+"tidyverse/dplyr",7783,"etiennebacher","Fix links to blog posts about `dplyr` releases","closed","2025-12-16T22:21:45Z","2025-12-19T18:47:58Z","2025-12-19T18:47:58Z",NA,2025-12-16
+"tidyverse/dplyr",7782,"DavisVaughan","Advance lazyeval and each deprecation","closed","2025-12-16T14:26:36Z","2025-12-19T18:39:43Z","2025-12-19T18:39:43Z",NA,2025-12-16
+"tidyverse/dplyr",7780,"DavisVaughan","Make `bind_rows()` a special S3 generic","closed","2025-12-03T18:23:45Z","2025-12-16T14:45:29Z",NA,NA,2025-12-03
+"tidyverse/dplyr",7777,"DavisVaughan","Implement `when_any()` and `when_all()`","closed","2025-11-26T12:54:15Z","2025-12-16T13:28:22Z","2025-12-16T13:28:22Z",NA,2025-11-26
+"tidyverse/dplyr",7776,"markwestcott34","Fix link to Acero in README.md","closed","2025-11-26T12:30:10Z","2025-11-26T16:00:24Z","2025-11-26T16:00:24Z",NA,2025-11-26
+"tidyverse/dplyr",7775,"DavisVaughan","Implement `filter_out()`","closed","2025-11-25T19:30:22Z","2025-12-15T21:03:36Z","2025-12-15T21:03:36Z",NA,2025-11-25
+"tidyverse/dplyr",7771,"DavisVaughan","Redocument post `storms` update","closed","2025-11-19T22:00:35Z","2025-11-20T15:56:07Z","2025-11-20T15:56:07Z",NA,2025-11-19
+"tidyverse/dplyr",7770,"DavisVaughan","Clarify `summarise()`'s `.groups` message","closed","2025-11-19T21:30:17Z","2025-11-20T15:56:36Z","2025-11-20T15:56:36Z",NA,2025-11-19
+"tidyverse/dplyr",7768,"Copilot","Use explicit namespace qualification in `tally_n()`","closed","2025-11-17T22:56:04Z","2025-11-17T23:01:30Z",NA,NA,2025-11-17
+"tidyverse/dplyr",7767,"DavisVaughan","Advance returning >1 row per `summarise()` group to defunct","closed","2025-11-14T18:10:34Z","2025-11-14T20:33:18Z","2025-11-14T20:33:18Z",NA,2025-11-14
+"tidyverse/dplyr",7766,"DavisVaughan","Deprecate `options(dplyr.legacy_locale =)` usage","closed","2025-11-12T22:59:29Z","2025-11-14T20:34:44Z","2025-11-14T20:34:43Z",NA,2025-11-12
+"tidyverse/dplyr",7765,"DavisVaughan","Make usage of `across()` and data frames in `filter()` defunct","closed","2025-11-12T21:15:11Z","2025-11-12T21:38:50Z","2025-11-12T21:38:50Z",NA,2025-11-12
+"tidyverse/dplyr",7764,"DavisVaughan","Minimal amount of work to deprecate lazyeval dplyr","closed","2025-11-12T13:12:16Z","2025-12-16T14:27:05Z",NA,NA,2025-11-12
+"tidyverse/dplyr",7762,"DavisVaughan","Advance all deprecations","closed","2025-11-08T19:38:10Z","2025-11-12T17:14:13Z","2025-11-12T17:14:13Z",NA,2025-11-08
+"tidyverse/dplyr",7756,"DavisVaughan","Bump LICENSE year","closed","2025-10-30T19:14:46Z","2025-10-30T19:31:09Z","2025-10-30T19:31:09Z",NA,2025-10-30
+"tidyverse/dplyr",7755,"DavisVaughan","Cleanup dead files","closed","2025-10-30T19:14:12Z","2025-10-30T19:31:18Z","2025-10-30T19:31:18Z",NA,2025-10-30
+"tidyverse/dplyr",7754,"DavisVaughan","Use lifecycle tooling for pkgconfig deprecation message","closed","2025-10-30T18:39:53Z","2025-10-30T19:08:51Z","2025-10-30T19:08:51Z",NA,2025-10-30
+"tidyverse/dplyr",7753,"DavisVaughan","Unify and improve on `...` warning with group functions","closed","2025-10-30T18:27:18Z","2025-10-30T18:39:57Z","2025-10-30T18:39:57Z",NA,2025-10-30
+"tidyverse/dplyr",7752,"DavisVaughan","Use lifecycle tooling to deprecate `wt = n()` and add tests","closed","2025-10-30T18:12:35Z","2025-10-30T18:27:24Z","2025-10-30T18:27:23Z",NA,2025-10-30
+"tidyverse/dplyr",7751,"DavisVaughan","Clarify that `case_when()` doesn't replace `if/else` control flow","closed","2025-10-30T14:17:30Z","2025-10-30T14:29:54Z","2025-10-30T14:29:54Z",NA,2025-10-30
+"tidyverse/dplyr",7750,"DavisVaughan","Store `expr` not `quo` for `last_dplyr_warnings()`","closed","2025-10-29T21:50:44Z","2025-10-30T12:34:39Z","2025-10-30T12:34:39Z",NA,2025-10-29
+"tidyverse/dplyr",7749,"DavisVaughan","Correctly allocate logical of length 0 in rowwise edge case","closed","2025-10-29T21:01:31Z","2025-10-30T12:35:54Z","2025-10-30T12:35:54Z",NA,2025-10-29
+"tidyverse/dplyr",7747,"DavisVaughan","Make `if_any()` and `if_all()` consistent in all contexts","closed","2025-10-28T17:53:21Z","2025-11-19T21:35:31Z","2025-11-19T21:35:31Z",NA,2025-10-28
+"tidyverse/dplyr",7744,"DavisVaughan","Use finalized version of string translation helpers","closed","2025-10-24T17:36:16Z","2025-10-24T17:56:26Z","2025-10-24T17:56:26Z",NA,2025-10-24
+"tidyverse/dplyr",7742,"DavisVaughan","Refresh `na_if()` and `coalesce()` docs","closed","2025-10-23T16:40:17Z","2025-10-23T17:29:11Z","2025-10-23T17:29:10Z",NA,2025-10-23
+"tidyverse/dplyr",7741,"DavisVaughan","C API compliance","closed","2025-10-22T20:41:28Z","2025-10-23T15:55:08Z","2025-10-23T15:55:07Z",NA,2025-10-22
+"tidyverse/dplyr",7740,"jeroenjanssens","Add ""Supported By Posit"" badge to website","closed","2025-10-15T12:42:35Z","2025-10-16T19:24:08Z","2025-10-16T19:24:08Z",NA,2025-10-15
+"tidyverse/dplyr",7739,"DavisVaughan","Fix `eval_formulas()` indices when `NULL` are involved","closed","2025-10-12T18:10:02Z","2025-10-14T15:03:56Z","2025-10-14T15:03:56Z",NA,2025-10-12
+"tidyverse/dplyr",7737,"DavisVaughan","Add `.unmatched` to `case_when()`","closed","2025-10-10T19:11:37Z","2025-10-10T22:25:59Z","2025-10-10T22:25:59Z",NA,2025-10-10
+"tidyverse/dplyr",7736,"DavisVaughan","Pass through correct `from_arg` and `to_arg` values","closed","2025-10-10T18:26:48Z","2025-10-10T19:51:35Z","2025-10-10T19:51:35Z",NA,2025-10-10
+"tidyverse/dplyr",7735,"DavisVaughan","Supersede `case_match()`","closed","2025-10-10T17:56:00Z","2025-10-10T19:51:05Z","2025-10-10T19:51:05Z",NA,2025-10-10
+"tidyverse/dplyr",7734,"DavisVaughan","Suggest `recode_values()` in the `recode()` docs","closed","2025-10-10T15:09:35Z","2025-10-10T17:07:57Z","2025-10-10T17:07:57Z",NA,2025-10-10
+"tidyverse/dplyr",7730,"DavisVaughan","Add `rbind.rowwise_df()` method","closed","2025-10-07T19:11:00Z","2025-10-10T19:53:09Z","2025-10-10T19:53:09Z",NA,2025-10-07
+"tidyverse/dplyr",7729,"DavisVaughan","Implement `recode_values()` and `replace_values()`","closed","2025-10-07T13:47:29Z","2025-10-09T19:38:39Z","2025-10-09T19:38:39Z",NA,2025-10-07
+"tidyverse/dplyr",7728,"DavisVaughan","Implement `replace_when()`","closed","2025-10-04T16:13:26Z","2025-10-09T17:48:56Z","2025-10-09T17:48:56Z",NA,2025-10-04
+"tidyverse/dplyr",7727,"DavisVaughan","Rework `case_when()` on top of `vctrs::vec_case_when()`","closed","2025-10-02T18:17:08Z","2025-10-02T19:38:49Z","2025-10-02T19:38:49Z",NA,2025-10-02
+"tidyverse/dplyr",7726,"DavisVaughan","Rework `vec_case_match()` on `vctrs::vec_case_when()`","closed","2025-10-02T17:52:33Z","2025-10-02T18:02:09Z","2025-10-02T18:02:09Z",NA,2025-10-02
+"tidyverse/dplyr",7725,"DavisVaughan","Refresh `coalesce()` on top of `vctrs::vec_case_when()`","closed","2025-10-01T18:40:21Z","2025-10-02T15:34:32Z","2025-10-02T15:34:32Z",NA,2025-10-01
+"tidyverse/dplyr",7724,"DavisVaughan","Soft-deprecate `case_when()` with all size 1 LHS and any size >1 RHS","closed","2025-09-30T16:42:35Z","2025-10-02T17:24:30Z","2025-10-02T17:24:30Z",NA,2025-09-30
+"tidyverse/dplyr",7723,"DavisVaughan","Switch `if_else()` to `vec_if_else()`","closed","2025-09-30T15:09:02Z","2025-10-01T13:25:23Z","2025-10-01T13:25:23Z",NA,2025-09-30
+"tidyverse/dplyr",7722,"DavisVaughan","Deprecate the `size` argument of `if_else()`","closed","2025-09-30T14:57:34Z","2025-10-01T13:18:32Z","2025-10-01T13:18:32Z",NA,2025-09-30
+"tidyverse/dplyr",7719,"Meghansaha","`.id` bug in `bind_rows()`","closed","2025-09-19T18:00:27Z","2025-09-22T14:52:12Z","2025-09-22T14:52:12Z",NA,2025-09-19
+"tidyverse/dplyr",7718,"juliaapolonio","Add rename feature of dplyr select to docs","closed","2025-09-19T16:53:22Z","2025-09-19T18:58:15Z","2025-09-19T18:58:15Z",NA,2025-09-19
+"tidyverse/dplyr",7717,"ccani007","Clarified slice_max() and slice_min() in intro vignette # 7671","closed","2025-09-19T16:01:36Z","2025-09-19T17:34:36Z","2025-09-19T17:34:36Z",NA,2025-09-19
+"tidyverse/dplyr",7716,"JBrandenburg02","Updating the examples for `across()` to include an example using `everything()`","closed","2025-09-19T15:59:27Z","2025-09-19T19:37:07Z","2025-09-19T19:37:07Z",NA,2025-09-19
+"tidyverse/dplyr",7715,"Hzanib","Add example for slice_sample","closed","2025-09-19T15:55:08Z","2025-09-19T19:45:24Z","2025-09-19T19:45:24Z",NA,2025-09-19
+"tidyverse/dplyr",7714,"alexmcsw","Remove `tidyr::pivot_longer()` examples in tidy selection documentation","closed","2025-09-19T14:30:38Z","2025-09-19T14:39:56Z","2025-09-19T14:39:55Z",NA,2025-09-19
+"tidyverse/dplyr",7713,"VisruthSK","Moved reframe() to stable","closed","2025-09-19T14:08:43Z","2025-09-19T14:57:58Z","2025-09-19T14:57:57Z",NA,2025-09-19
+"tidyverse/dplyr",7711,"gaborcsardi","Use base pipe, require R 4.1.0","closed","2025-09-09T09:13:14Z","2025-09-18T18:14:02Z","2025-09-18T18:14:02Z",NA,2025-09-09
+"tidyverse/dplyr",7705,"DavisVaughan","An important change","closed","2025-07-31T15:05:25Z","2025-07-31T16:46:40Z",NA,NA,2025-07-31
+"tidyverse/dplyr",7703,"DavisVaughan","Testing format workflow","closed","2025-07-23T19:55:32Z","2025-07-23T20:04:19Z",NA,NA,2025-07-23
