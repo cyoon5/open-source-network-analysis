@@ -73,8 +73,6 @@ build_onemodeprojection_network <- function(bipartite_network, target_column) {
 #'   merged or closed PR. Creates A -> B edges where B closed A's PR.
 #' @param reviews Optional data.table with `reviewer` and `author`; one row per
 #'   review. Creates A -> B edges where A reviewed B's PR.
-#' @param comments Optional data.table with `user` and `thread`; one row per
-#'   comment. Connects users who commented on the same PR or issue thread.
 #' @param edits Optional data.table with `user`, `file`, and `date`; one row per
 #'   file edit. Connects users who edited the same file within `window` days.
 #' @param window Maximum days between edits to count as co-editing. Default 90.
@@ -82,8 +80,7 @@ build_onemodeprojection_network <- function(bipartite_network, target_column) {
 #'   Each edge has a `layer` ("co_repo", "pr", "review", "discussion", "coedit")
 #'   and a `weight`. Symmetric layers are stored in both directions. Self-loops,
 #'   and edges involving anyone not in `proj`, are dropped.
-build_multilayer <- function(proj, prs = NULL, reviews = NULL,
-                             comments = NULL, edits = NULL, window = 90) {
+build_multilayer <- function(proj, prs = NULL, reviews = NULL, edits = NULL, window = 90) {
   nodes <- sub("^u:", "", V(proj)$name)
   
   # Count A -> B interactions, dropping self-loops
@@ -105,15 +102,7 @@ build_multilayer <- function(proj, prs = NULL, reviews = NULL,
   # 2. Review layer: reviewer -> PR author
   if (!is.null(reviews)) layers$review <- directed_layer(reviews$reviewer, reviews$author, "review")
   
-  # 3. Discussion layer: both commented on the same thread (weight = shared threads)
-  if (!is.null(comments)) {
-    c1 <- unique(comments[, .(user, thread)])
-    pairs <- c1[c1, on = "thread", allow.cartesian = TRUE][user < i.user]
-    disc <- pairs[, .(weight = .N), by = .(from = user, to = i.user)][, layer := "discussion"]
-    layers$discussion <- mirror(disc)
-  }
-  
-  # 4. Co-editing layer: same file within `window` days (weight = shared files)
+  # 3. Co-editing layer: same file within `window` days (weight = shared files)
   if (!is.null(edits)) {
     e <- unique(edits[, .(user, file, date = as.Date(date))])
     e[, `:=`(lo = date - window, hi = date + window)]
