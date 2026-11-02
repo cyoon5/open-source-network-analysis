@@ -1,0 +1,43 @@
+Index: open-source-network-analysis.Rproj
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/open-source-network-analysis.Rproj b/open-source-network-analysis.Rproj
+new file mode 100644
+--- /dev/null	(date 1793591370017)
++++ b/open-source-network-analysis.Rproj	(date 1793591370017)
+@@ -0,0 +1,13 @@
++Version: 1.0
++
++RestoreWorkspace: Default
++SaveWorkspace: Default
++AlwaysSaveHistory: Default
++
++EnableCodeIndexing: Yes
++UseSpacesForTab: Yes
++NumSpacesForTab: 2
++Encoding: UTF-8
++
++RnwWeave: Sweave
++LaTeX: pdfLaTeX
+Index: .gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>.DS_Store\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.gitignore b/.gitignore
+--- a/.gitignore	(revision 3ba721c4058795287a35850bf100e7d9418d8d96)
++++ b/.gitignore	(date 1793591429662)
+@@ -1,1 +1,5 @@
+ .DS_Store
++.Rproj.user
++.Rhistory
++.RData
++.Ruserdata
+diff --git a/R/data_collection.R b/R/data_collection.R
+new file mode 100644
+diff --git a/R/network_analysis.R b/R/network_analysis.R
+new file mode 100644
