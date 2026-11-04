@@ -78,14 +78,30 @@ fetch_repo_prs <- function(repo_slug) {
   return(prs_df)
 }
 
-#Run the function for tidyverse/dplyr
-target_repo <- "tidyverse/dplyr"
-raw_prs <- fetch_repo_prs(target_repo)
+target_repos <- c(
+  "tidyverse/dplyr"
+  
+)
 
-if (!dir.exists("data")) {
-  dir.create("data")
+all_repos_prs <- list()
+
+for (repo_slug in target_repos) {
+  repo_data <- fetch_repo_prs(repo_slug)
+  if (nrow(repo_data) > 0) {
+    all_repos_prs[[repo_slug]] <- repo_data
+  }
 }
 
-write.csv(raw_prs, "data/raw_prs.csv", row.names = FALSE)
-message("Successfully saved ", nrow(raw_prs), " PRs to data/raw_prs.csv!")
+if (length(all_repos_prs) > 0) {
+  combined_raw_prs <- dplyr::bind_rows(all_repos_prs)
+  
+  if (!dir.exists("data")) {
+    dir.create("data")
+  }
+  
+  write.csv(combined_raw_prs, "data/raw_prs.csv", row.names = FALSE)
+  message("Successfully saved a combined total of ", nrow(combined_raw_prs), " PRs from all repositories to data/raw_prs.csv!")
+} else {
+  warning("No PRs collected from any repository.")
+}
 

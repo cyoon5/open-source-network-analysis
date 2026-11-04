@@ -6,13 +6,18 @@ pat <- Sys.getenv("GITHUB_PAT")
 if (pat == "") stop("GitHub API Key Missing")
 
 cleaned_prs <- read.csv("data/cleaned_prs.csv", stringsAsFactors = FALSE)
-target_repo <- "tidyverse/dplyr"
+
+if (!all(c("repo", "pr_number") %in% names(cleaned_prs))) {
+  stop("cleaned_prs.csv must contain both 'repo' and 'pr_number' columns.")
+}
 
 all_reviews <- list()
-message("Fetching raw reviews for ", nrow(cleaned_prs), " scoped PRs...")
+message("Fetching raw reviews dynamically for ", nrow(cleaned_prs), " PRs across repositories...")
 
 for (i in seq_len(nrow(cleaned_prs))) {
+  target_repo <- cleaned_prs$repo[i]
   pr_num <- cleaned_prs$pr_number[i]
+  
   url <- paste0("https://api.github.com/repos/", target_repo, "/pulls/", pr_num, "/reviews")
   
   resp <- request(url) |>
@@ -25,6 +30,7 @@ for (i in seq_len(nrow(cleaned_prs))) {
     if (length(reviews_data) > 0) {
       for (rev in reviews_data) {
         all_reviews[[length(all_reviews) + 1]] <- data.frame(
+          repo = target_repo,
           pr_number = pr_num,
           reviewer = if (!is.null(rev$user$login)) rev$user$login else NA_character_,
           author = cleaned_prs$author[i],
@@ -40,5 +46,5 @@ for (i in seq_len(nrow(cleaned_prs))) {
 if (length(all_reviews) > 0) {
   raw_reviews_df <- bind_rows(all_reviews)
   write.csv(raw_reviews_df, "data/raw_reviews.csv", row.names = FALSE)
-  message("Successfully saved raw reviews to data/raw_reviews.csv!")
+  message("Successfully saved dynamic raw reviews to data/raw_reviews.csv!")
 }
