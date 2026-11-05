@@ -79,8 +79,8 @@ fetch_repo_prs <- function(repo_slug) {
 }
 
 target_repos <- c(
-  "tidyverse/dplyr"
-  
+  "tidyverse/dplyr",
+  "pandas-dev/pandas"
 )
 
 all_repos_prs <- list()
