@@ -1,54 +1,62 @@
 # Open Source Network Analysis
 
-A network science project investigating collaboration patterns in open-source GitHub repositories.
+COSC 421 network science project by Chanyee Yoon and Carter Ludwig.
 
-## Overview
+We test whether the structure of multilayer collaboration networks can spot unusual
+contributors (e.g. people whose PRs keep getting closed without being merged) in
+open-source GitHub repositories. Each repository gets a network of contributors with
+three layers:
 
-Open-source GitHub repositories rely on contributors submitting pull requests (PRs), reviewing code, and collaborating with maintainers. This project explores contributor interactions and unusual contribution patterns that may indicate suspicious activity.
+| Layer | Edge | Built from |
+|---|---|---|
+| Review (directed) | A → B if A reviewed B's PR | `data/cleaned_reviews.csv` |
+| Discussion (directed) | A → B if A commented on B's PR | `data/cleaned_comments.csv` |
+| Co-editing (undirected) | A — B if both changed the same file within 90 days | `data/cleaned_edits.csv` |
 
-## Objectives
+Repositories: `pandas-dev/pandas` and `pola-rs/polars`, PRs created 2025-07-01 to 2026-06-30.
 
-- Collect GitHub repository, contributor, pull request, and review data.
-- Construct networks representing contributor collaboration and review relationships.
-- Apply network analysis techniques to identify influential contributors and unusual activity.
-- Investigate potential indicators of suspicious contribution patterns.
+## Setup
 
-## Planned Analysis
+1. Install packages: `install.packages(c("httr2", "jsonlite", "dplyr", "igraph"))`
+2. Put a GitHub token in `.Renviron` (never commit this file):
+   `GITHUB_PAT=ghp_yourtokenhere`
+3. Restart R, then open `open-source-network-analysis.Rproj` so paths work.
 
-- Degree Centrality
-- Betweenness Centrality
-- Eigenvector Centrality
-- Katz Centrality
-- Network Visualization
+## Run order
 
-## Technologies
+All settings (repos, dates, thresholds) live in `R/config.R`.
 
-- R
-- igraph
-- GitHub API
+| Script | What it does | API calls / time |
+|---|---|---|
+| `R/01_collect_prs.R` | PRs in the date window | ~1 per 100 PRs, minutes |
+| `R/02_collect_reviews.R` | Reviews on each PR | 1 per PR, ~1 h per 3,500 PRs |
+| `R/03_collect_comments.R` | Comments on each PR (repo-wide endpoints) | ~1 per 100 comments, minutes |
+| `R/04_collect_edits.R` | Files changed by each PR (reuses old pandas data) | 1 per new PR |
+| `R/05_process_data.R` | Cleans everything, labels contributors | none, seconds |
 
-## Group Members
+Scripts 02 and 04 save progress to `data/checkpoints/` and wait out GitHub's rate limit on
+their own. If one stops, run it again and it continues where it left off. To start a
+script completely fresh, delete its files in `data/checkpoints/`.
 
-- Chanyee Yoon
-- Carter Ludwig
+## Data files
 
-## High level code design
+**raw_\*.csv** come straight from the API. **cleaned_\*.csv** are what the analysis uses.
 
-5-6 files: 
-Main	
-Collection
-This file will focus on functions that send sql queries to the github api and graphql servers.
-data_collection.R	Retrieve repository, contributor, PR and review data from GitHub
-Constructing graphs
-This file will focus on functions that output graphs such as the bipartite network and the multi layer network as well as a way to do a one mode projection given a target column
-data_processing.R	Clean data and prepare contributor relationships
-Metrics
-Functions for evaluating and retrieving valuable information from the network such as various centralities and other metrics.
-network_analysis.R	Construct networks and calculate centrality measures 
-ML?
-If have time
-Will be used to construct and train ML models that can assist with predicting if a PR is AI or not based off the metrics and the structure of the graphs.
-Plotting
-Functions that will be used to construct plots and graphs and store inside the data directory.
+- `cleaned_prs.csv`: repo, pr_number, author, author_type, title, state, draft, created_at,
+  closed_at, merged_at, labels, body_mentions_ai, ai_keyword, is_merged, is_finished,
+  created_date, author_group
+- `cleaned_reviews.csv`: repo, pr_number, reviewer, pr_author, review_state, submitted_at,
+  reviewer_group, pr_author_group (self-reviews and unsubmitted reviews removed)
+- `cleaned_comments.csv`: repo, pr_number, commenter, pr_author, comment_type
+  (conversation / code), created_at, commenter_group, pr_author_group (comments on your own PR removed)
+- `cleaned_edits.csv`: repo, pr_number, author, pr_created_at, filename, status, additions,
+  deletions (release-note files and files in >5% of PRs removed)
+- `removed_hot_files.csv`: the files removed from co-editing and why
+- `contributors.csv`: one row per contributor per repo: n_prs, n_finished, n_merged,
+  merge_rate, n_reviews_given / received, n_comments_given / received,
+  n_distinct_feedback_givers, n_files_edited, group (human / bot / ai), is_unusual
 
-
+**Labels.** `group` is `bot` for GitHub bot accounts, names ending in `[bot]` and known bots;
+`ai` for AI agent accounts (e.g. Copilot) or authors whose PR descriptions mostly mention an
+AI tool; otherwise `human`. `is_unusual` means 2+ finished PRs with a merge rate under 30%.
+These are proxy labels and will contain some noise.
