@@ -1,119 +1,247 @@
 library(data.table)
 library(igraph)
-set.seed(123)
 
-# Given a data table, returns bipartite network for user to repo relationship
-# REQUIRES
-# user AS character
-# repo AS character
-build_bipartite_network <- function(dt) {
-  # parameter and type check
-  if (!data.table::is.data.table(dt)) {
-    stop("`dt` must be a data.table.", call. = FALSE)
-  }
-  
-  required <- c(user = "character", repo = "character")
-  
-  missing <- setdiff(names(required), names(dt))
+# Multilayer contributor networks, one per repository.
+#
+# Nodes are contributors: anyone who opened, reviewed or commented on a PR in
+# the repository. Every repository gets three layers over the same node set:
+#
+#   review      (directed)    A -> B if A reviewed B's PR.   weight = reviews
+#   discussion  (directed)    A -> B if A commented on B's PR. weight = comments
+#   coedit      (undirected)  A -- B if both changed the same file within
+#                             `window` days of each other.   weight = shared files
+#
+# A contributor is "unusual" if they opened at least 2 PRs and fewer than 30%
+# of them were merged. Bot accounts (login ending in "[bot]") are labelled.
+#
+# Usage (from the project root):
+#   source("R/network_analysis.R")
+#   prs     <- read.csv("data/cleaned_prs.csv")
+#   reviews <- read.csv("data/cleaned_reviews.csv")
+#   edits   <- read.csv("data/cleaned_edits.csv")
+#   nets    <- build_all_multilayers(prs, reviews, comments = NULL, edits)
+#   pandas  <- nets[["pandas-dev/pandas"]]
+#   layer_summary(pandas)
+#   node_metrics(pandas)
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+is_bot <- function(login) grepl("\\[bot\\]$", login, ignore.case = TRUE)
+
+check_columns <- function(dt, required, arg) {
+  missing <- setdiff(required, names(dt))
   if (length(missing)) {
-    stop("Missing column(s): ", paste(missing, collapse = ", "), call. = FALSE)
+    stop("`", arg, "` is missing column(s): ", paste(missing, collapse = ", "), call. = FALSE)
   }
-  
-  # handling
-  
-  # Prefix IDs so a user and a repo can't share a name (fixed from edges to dt)
-  e <- data.table(from = paste0("u:", dt$user),
-                  to   = paste0("r:", dt$repo))
-  
-  nodes <- data.table(
-    name = c(unique(e$from), unique(e$to)),
-    type = c(rep(FALSE, uniqueN(e$from)), rep(TRUE, uniqueN(e$to)))  # FALSE = user, TRUE = repo
-  )
-  
-  g <- graph_from_data_frame(e, directed = FALSE, vertices = nodes)
-  g$partitions <- c("user", "repo")   # type FALSE side, type TRUE side
-  g
 }
 
-#' Build a one-mode projection of a bipartite network
-#'
-#' @param bipartite_network A bipartite igraph object with a logical `type`
-#'   vertex attribute and a `partitions` graph attribute naming each side.
-#' @param target_column The side to project onto; must be one of
-#'   `bipartite_network$partitions` (e.g. "user" or "repo").
-#' @return An igraph object containing only the target nodes. Two nodes are
-#'   connected if they share a neighbour, with edge weight = number of shared neighbours.
-build_onemodeprojection_network <- function(bipartite_network, target_column) {
-  if (!inherits(bipartite_network, "igraph")) {
-    stop("`bipartite_network` must be an igraph object.", call. = FALSE)
-  }
-  if (!is_bipartite(bipartite_network)) {
-    stop("`bipartite_network` is not bipartite (missing logical `type` vertex attribute).", call. = FALSE)
-  }
-  
-  partitions <- bipartite_network$partitions
-  if (is.null(partitions)) {
-    stop("`bipartite_network` has no `partitions` attribute. Build it with build_bipartite().", call. = FALSE)
-  }
-  if (!is.character(target_column) || length(target_column) != 1 ||
-      !target_column %in% partitions) {
-    stop("`target_column` must be one of: ", paste(partitions, collapse = ", "), call. = FALSE)
-  }
-  
-  side <- if (target_column == partitions[1]) "false" else "true"
-  bipartite_projection(bipartite_network, which = side, multiplicity = TRUE)
+# Undirected view of a layer: A -> B and B -> A become one edge, weights summed.
+collapse_layer <- function(g) {
+  as_undirected(g, mode = "collapse", edge.attr.comb = list(weight = "sum", "ignore"))
 }
 
+# Number of distinct people each node is connected to, ignoring direction.
+n_neighbours <- function(g) degree(collapse_layer(g))
 
-#' Build a multilayer contributor network
+empty_edges <- function() data.table(from = character(), to = character(), weight = integer())
+
+#' Per-author PR outcomes for one repository
 #'
-#' @param proj A contributor one-mode projection (igraph, names "u:"),
-#'   with edge weight = number of shared repos.
-#' @param prs Optional data.table with `author` and `closer`; one row per
-#'   merged or closed PR. Creates A -> B edges where B closed A's PR.
-#' @param reviews Optional data.table with `reviewer` and `author`; one row per
-#'   review. Creates A -> B edges where A reviewed B's PR.
-#' @param edits Optional data.table with `user`, `file`, and `date`; one row per
-#'   file edit. Connects users who edited the same file within `window` days.
-#' @param window Maximum days between edits to count as co-editing. Default 90.
-#' @return A directed igraph object whose nodes are the contributors in `proj`.
-#'   Each edge has a `layer` ("co_repo", "pr", "review", "discussion", "coedit")
-#'   and a `weight`. Symmetric layers are stored in both directions. Self-loops,
-#'   and edges involving anyone not in `proj`, are dropped.
-build_multilayer <- function(proj, prs = NULL, reviews = NULL, edits = NULL, window = 90) {
-  nodes <- sub("^u:", "", V(proj)$name)
-  
-  # Count A -> B interactions, dropping self-loops
-  directed_layer <- function(from, to, layer) {
-    data.table(from, to)[from != to, .(weight = .N), by = .(from, to)][, layer := layer][]
+#' @param prs data.table of PRs with `author` and `merged_at`.
+#' @param min_prs,max_merge_rate An author is unusual if they opened at least
+#'   `min_prs` PRs and fewer than `max_merge_rate` of them were merged.
+#' @return data.table with `name`, `n_prs`, `n_merged`, `merge_rate`, `unusual`.
+contributor_stats <- function(prs, min_prs = 2, max_merge_rate = 0.3) {
+  stats <- prs[, .(n_prs = .N, n_merged = sum(!is.na(merged_at) & merged_at != "")),
+               by = .(name = author)]
+  stats[, merge_rate := n_merged / n_prs]
+  stats[, unusual := n_prs >= min_prs & merge_rate < max_merge_rate]
+  stats[]
+}
+
+# ---------------------------------------------------------------------------
+# Network construction
+# ---------------------------------------------------------------------------
+
+#' Build the three-layer contributor network for one repository
+#'
+#' @param repo_slug Repository to build, e.g. "pandas-dev/pandas".
+#' @param prs data.frame with `repo`, `pr_number`, `author`, `created_at`,
+#'   `merged_at`; one row per PR. Only reviews, comments and edits on these PRs
+#'   are used, so filter PRs by date before calling.
+#' @param reviews Optional data.frame with `repo`, `pr_number`, `reviewer`;
+#'   one row per review.
+#' @param comments Optional data.frame with `repo`, `pr_number`, `commenter`;
+#'   one row per comment (issue and review comments together).
+#' @param edits Optional data.frame with `repo`, `pr_number`, `filename`;
+#'   one row per file changed by a PR. The edit date is the PR's creation date.
+#' @param window Maximum days between two PRs touching the same file for their
+#'   authors to count as co-editors. Default 90.
+#' @param max_file_share Files changed by more than this share of the
+#'   repository's PRs are dropped from the co-editing layer. Default 0.10.
+#' @param exclude_files Regex of files to drop from the co-editing layer
+#'   (release notes and changelogs by default). NULL to keep all files.
+#' @param drop_bots If TRUE, remove bot accounts from the network.
+#' @param min_prs,max_merge_rate Passed to [contributor_stats()].
+#' @return A named list of three igraph objects (`review`, `discussion`,
+#'   `coedit`) sharing the same vertices in the same order. Vertex attributes:
+#'   `n_prs`, `n_merged`, `merge_rate`, `unusual`, `is_bot`. Edge attribute:
+#'   `weight`. Graph attributes: `repo`, `layer`. Self-loops are dropped.
+build_multilayer <- function(repo_slug, prs, reviews = NULL, comments = NULL, edits = NULL,
+                             window = 90, max_file_share = 0.10,
+                             exclude_files = "whatsnew/|release[-_ ]?notes|(^|/)(news|changelog|changes)(\\.[a-z]+)?$",
+                             drop_bots = FALSE, min_prs = 2, max_merge_rate = 0.3) {
+  prs <- as.data.table(prs)
+  check_columns(prs, c("repo", "pr_number", "author", "created_at", "merged_at"), "prs")
+  prs <- prs[repo == repo_slug & !is.na(author)]
+  if (!nrow(prs)) stop("No PRs found for repo '", repo_slug, "'.", call. = FALSE)
+  pr_info <- prs[, .(pr_number, author, date = as.Date(substr(created_at, 1, 10)))]
+
+  # Directed layer: actor -> PR author, weight = number of reviews/comments
+  feedback_layer <- function(dt, actor, arg) {
+    if (is.null(dt)) return(list(edges = empty_edges(), actors = character()))
+    dt <- as.data.table(dt)
+    check_columns(dt, c("repo", "pr_number", actor), arg)
+    dt <- dt[repo == repo_slug & !is.na(get(actor)), .(pr_number, from = get(actor))]
+    e <- merge(dt, pr_info[, .(pr_number, to = author)], by = "pr_number")
+    list(edges = e[tolower(from) != tolower(to), .(weight = .N), by = .(from, to)],
+         actors = unique(e$from))
   }
-  # Turn undirected pairs into A -> B and B -> A
-  mirror <- function(dt) rbind(dt, dt[, .(from = to, to = from, weight, layer)])
-  
-  # Co-repo layer, straight from the projection
-  co <- as.data.table(as_data_frame(proj, what = "edges"))
-  co <- co[, .(from = sub("^u:", "", from), to = sub("^u:", "", to),
-               weight, layer = "co_repo")]
-  layers <- list(mirror(co))
-  
-  # 1. PR layer: author -> merger/closer
-  if (!is.null(prs)) layers$pr <- directed_layer(prs$author, prs$closer, "pr")
-  
-  # 2. Review layer: reviewer -> PR author
-  if (!is.null(reviews)) layers$review <- directed_layer(reviews$reviewer, reviews$author, "review")
-  
-  # 3. Co-editing layer: same file within `window` days (weight = shared files)
-  if (!is.null(edits)) {
-    e <- unique(edits[, .(user, file, date = as.Date(date))])
+
+  # Undirected layer: authors whose PRs changed the same file within `window` days
+  coedit_layer <- function(dt) {
+    if (is.null(dt)) return(empty_edges())
+    dt <- as.data.table(dt)
+    check_columns(dt, c("repo", "pr_number", "filename"), "edits")
+    e <- unique(dt[repo == repo_slug & !is.na(filename) & filename != "", .(pr_number, filename)])
+    e <- merge(e, pr_info, by = "pr_number")
+
+    # Drop files that nearly every PR touches; they would connect everyone
+    n_prs <- uniqueN(e$pr_number)
+    share <- e[, .(share = uniqueN(pr_number) / n_prs), by = filename]
+    drop <- share[share > max_file_share, filename]
+    if (!is.null(exclude_files)) {
+      drop <- union(drop, share[grepl(exclude_files, filename, ignore.case = TRUE), filename])
+    }
+    e <- unique(e[!filename %in% drop, .(user = author, filename, date)])
+
     e[, `:=`(lo = date - window, hi = date + window)]
-    pairs <- e[e, on = .(file, date >= lo, date <= hi),
-               .(a = x.user, b = i.user, file), allow.cartesian = TRUE, nomatch = 0]
-    coedit <- pairs[a < b, .(weight = uniqueN(file)), by = .(from = a, to = b)][, layer := "coedit"]
-    layers$coedit <- mirror(coedit)
+    pairs <- e[e, on = .(filename, date >= lo, date <= hi),
+               .(a = x.user, b = i.user, filename), allow.cartesian = TRUE, nomatch = NULL]
+    pairs[a < b, .(weight = uniqueN(filename)), by = .(from = a, to = b)]
   }
-  
-  el <- rbindlist(layers, use.names = TRUE)
-  el <- el[from %in% nodes & to %in% nodes]   # keep only contributors from the projection
-  
-  graph_from_data_frame(el, directed = TRUE, vertices = data.table(name = nodes))
+
+  review <- feedback_layer(reviews, "reviewer", "reviews")
+  discussion <- feedback_layer(comments, "commenter", "comments")
+  edges <- list(review = review$edges, discussion = discussion$edges, coedit = coedit_layer(edits))
+
+  # Nodes: everyone who opened, reviewed or commented on a PR
+  nodes <- data.table(name = unique(c(prs$author, review$actors, discussion$actors)))
+  nodes <- merge(nodes, contributor_stats(prs, min_prs, max_merge_rate), by = "name", all.x = TRUE)
+  nodes[is.na(n_prs), `:=`(n_prs = 0L, n_merged = 0L, unusual = FALSE)]
+  nodes[, is_bot := is_bot(name)]
+  if (drop_bots) {
+    nodes <- nodes[is_bot == FALSE]
+    edges <- lapply(edges, function(el) el[from %in% nodes$name & to %in% nodes$name])
+  }
+
+  directed <- c(review = TRUE, discussion = TRUE, coedit = FALSE)
+  layers <- lapply(names(edges), function(layer) {
+    g <- graph_from_data_frame(edges[[layer]], directed = directed[[layer]], vertices = nodes)
+    g$repo <- repo_slug
+    g$layer <- layer
+    g
+  })
+  setNames(layers, names(edges))
+}
+
+#' Build one multilayer network per repository found in `prs`
+#'
+#' @inheritParams build_multilayer
+#' @param ... Further arguments passed to [build_multilayer()].
+#' @return A named list (by repo) of multilayer networks.
+build_all_multilayers <- function(prs, reviews = NULL, comments = NULL, edits = NULL, ...) {
+  repos <- unique(prs$repo)
+  setNames(lapply(repos, build_multilayer, prs = prs, reviews = reviews,
+                  comments = comments, edits = edits, ...), repos)
+}
+
+# ---------------------------------------------------------------------------
+# Network metrics
+# ---------------------------------------------------------------------------
+
+#' Size and connectivity of each layer
+#'
+#' Computed on the contributors active in the layer (at least one edge), so a
+#' layer is not padded with people who only appear in other layers.
+#'
+#' @param ml A multilayer network from [build_multilayer()].
+#' @return data.table, one row per layer: `nodes`, `edges`, `avg_degree`
+#'   (mean number of distinct people connected to), `density`, `components`
+#'   (weak, for directed layers) and `giant_share` (share of nodes in the
+#'   largest component).
+layer_summary <- function(ml) {
+  rbindlist(lapply(ml, function(g) {
+    g <- induced_subgraph(g, which(degree(g) > 0))
+    comp <- components(g, mode = "weak")
+    data.table(repo = g$repo, layer = g$layer, directed = is_directed(g),
+               nodes = vcount(g), edges = ecount(g),
+               avg_degree = mean(n_neighbours(g)), density = edge_density(g),
+               components = comp$no, giant_share = max(comp$csize, 0) / vcount(g))
+  }))
+}
+
+#' Per-contributor metrics across all layers
+#'
+#' For each layer, columns are prefixed with the layer name:
+#'   `_in_degree`, `_out_degree` (directed layers only): distinct people who
+#'     gave feedback on this contributor's PRs / whose PRs they gave feedback on.
+#'   `_degree`: distinct people connected to, ignoring direction.
+#'   `_betweenness`: normalized, unweighted, ignoring direction (bridging).
+#'   `_pagerank`: weighted; in directed layers rank flows from reviewer or
+#'     commenter to PR author.
+#'   `_eigenvector`: weighted, ignoring direction.
+#' Plus `n_feedback_givers` (distinct people who reviewed or commented on the
+#' contributor's PRs, across both layers) and `n_layers` (layers the
+#' contributor has at least one edge in).
+#'
+#' @param ml A multilayer network from [build_multilayer()].
+#' @return data.table, one row per contributor.
+node_metrics <- function(ml) {
+  nodes <- as.data.table(as_data_frame(ml[[1]], what = "vertices"))
+  nodes[, repo := ml[[1]]$repo]
+
+  for (layer in names(ml)) {
+    g <- ml[[layer]]
+    u <- collapse_layer(g)
+    col <- function(x) paste0(layer, "_", x)
+    has_edges <- ecount(g) > 0
+    if (is_directed(g)) {
+      nodes[, (col("in_degree")) := degree(g, mode = "in")]
+      nodes[, (col("out_degree")) := degree(g, mode = "out")]
+    }
+    nodes[, (col("degree")) := degree(u)]
+    nodes[, (col("betweenness")) := betweenness(u, weights = NA, normalized = TRUE)]
+    nodes[, (col("pagerank")) := if (has_edges) page_rank(g)$vector else NA_real_]
+    nodes[, (col("eigenvector")) := if (has_edges) eigen_centrality(u)$vector else NA_real_]
+  }
+
+  feedback <- rbindlist(lapply(ml[c("review", "discussion")], as_data_frame, what = "edges"))
+  givers <- feedback[, .(n_feedback_givers = uniqueN(from)), by = .(name = to)]
+  nodes <- merge(nodes, givers, by = "name", all.x = TRUE, sort = FALSE)
+  nodes[is.na(n_feedback_givers), n_feedback_givers := 0L]
+
+  nodes[, n_layers := rowSums(nodes[, paste0(names(ml), "_degree"), with = FALSE] > 0)]
+  nodes[]
+}
+
+#' Cross-layer degree correlation
+#'
+#' @param ml A multilayer network from [build_multilayer()].
+#' @param method Correlation method passed to [cor()]. Default "spearman".
+#' @return Correlation matrix of each contributor's degree in each layer.
+layer_degree_correlation <- function(ml, method = "spearman") {
+  cor(sapply(ml, n_neighbours), method = method)
 }
