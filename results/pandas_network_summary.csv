@@ -1,0 +1,4 @@
+"repo","layer","directed","nodes","edges","avg_degree","density","components","giant_share"
+"pandas-dev/pandas","review",TRUE,568,885,3.04577464788732,0.00274796929726507,6,0.980633802816901
+"pandas-dev/pandas","discussion",TRUE,844,1415,3.28436018957346,0.00198877851051031,2,0.997630331753555
+"pandas-dev/pandas","coedit",FALSE,753,8840,23.4794156706507,0.03122262722161,4,0.98804780876494

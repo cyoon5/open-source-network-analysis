@@ -1,0 +1,4 @@
+"repo","layer","directed","nodes","edges","avg_degree","density","components","giant_share"
+"pola-rs/polars","review",TRUE,227,420,3.3920704845815,0.00818681532883708,1,1
+"pola-rs/polars","discussion",TRUE,358,660,3.40223463687151,0.00516407680390592,6,0.972067039106145
+"pola-rs/polars","coedit",FALSE,328,4669,28.469512195122,0.0870627284254494,1,1
